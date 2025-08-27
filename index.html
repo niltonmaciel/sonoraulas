@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Aulas - SonorAulas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .status-ministrada { background: linear-gradient(135deg, #10b981, #059669); }
+        .status-reposicao { background: linear-gradient(135deg, #38bdf8, #0ea5e9); }
+        .status-faltou-sem { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .status-faltou-com { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .status-professor { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        textarea { resize: vertical; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white text-2xl font-bold">🎵</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">SonorAulas</h1>
+                <p class="text-gray-600">Sistema de Registro de Aulas</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Professor</label>
+                    <input type="text" id="professorName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Digite seu nome de usuário">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                    <input type="password" id="professorPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Digite sua senha">
+                </div>
+                <div id="loginError" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-center text-sm text-red-700">
+                    Usuário ou senha não conferem. Tente novamente.
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                    Entrar no Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainApp" class="hidden min-h-screen p-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">SonorAulas</h1>
+                        <p class="text-gray-600">Bem-vindo, <span id="welcomeName" class="font-medium"></span>!</p>
+                    </div>
+                    <button onclick="logout()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">Sair</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Registrar Nova Aula</h2>
+                <form id="aulaForm" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Aluno</label>
+                            <div class="relative">
+                                <input type="text" id="nomeAluno" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Comece a digitar o nome do aluno...">
+                                <div id="sugestoesAlunos" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                    </div>
+                            </div>
+                            <div id="alunoError" class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                                Aluno não encontrado. Por favor, verifique a escrita ou entre em contato com a secretaria para cadastrá-lo.
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data da Aula</label>
+                            <input type="date" id="dataAula" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Horário da Aula</label>
+                            <input type="time" id="horaAula" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status da Aula</label>
+                            <select id="statusAula" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                <option value="">Selecione o status</option>
+                                <option value="Aula Ministrada">Aula Ministrada</option>
+                                <option value="Reposição Aula">Reposição Aula</option>
+                                <option value="Aluno Faltou (sem aviso)">Aluno Faltou (sem aviso)</option>
+                                <option value="Aluno Faltou (com aviso)">Aluno Faltou (com aviso)</option>
+                                <option value="Professor Não Pôde Ir">Professor Não Pôde Ir</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Anotações da Aula</label>
+                        <textarea id="anotacoesAula" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Resumo da aula, dificuldades do aluno, próximos passos..."></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200 shadow-lg">Salvar no Google Sheets</button>
+                </form>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Minhas Aulas Registradas</h2>
+                    <div class="flex items-center gap-4">
+                        <button onclick="carregarAulas()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">🔄 Atualizar</button>
+                        <div class="text-sm text-gray-600">Total: <span id="totalAulas" class="font-medium">0</span> aulas</div>
+                    </div>
+                </div>
+                <div id="registrosContainer" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="successToast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center"><span class="mr-2">✅</span><span>Aula salva no Google Sheets!</span></div>
+    </div>
+    <div id="errorToast" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center"><span class="mr-2">❌</span><span id="errorMessage">Erro ao salvar</span></div>
+    </div>
+
+    <script>
+        // ===================================================================================
+        // ATENÇÃO: Substitua a URL abaixo pela sua URL do Apps Script
+        // ===================================================================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGyi_XTWkb8Fum-kzAuPgVZMnZY30vpeCZY4_7_g4sMD1Ln40OBIq9FP4zr71x5PD1Zg/exec';
+        let currentProfessor = '';
+        let selectedAluno = null;
+        let debounceTimer;
+
+        // --- LÓGICA DE LOGIN ---
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('loginError');
+            const professorName = document.getElementById('professorName').value.trim();
+            const professorPassword = document.getElementById('professorPassword').value;
+
+            loginBtn.textContent = 'Verificando...';
+            loginBtn.disabled = true;
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'login', professor: professorName, senha: professorPassword })
+                });
+                if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
+                const result = await response.json();
+                if (result.success) {
+                    currentProfessor = professorName;
+                    document.getElementById('welcomeName').textContent = professorName;
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    await carregarAulas();
+                } else {
+                    errorDiv.classList.remove('hidden');
+                    document.getElementById('professorPassword').value = '';
+                }
+            } catch (error) {
+                console.error('Erro de conexão no login:', error);
+                errorDiv.textContent = 'Erro de conexão. Tente novamente.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loginBtn.textContent = 'Entrar no Sistema';
+                loginBtn.disabled = false;
+            }
+        });
+        
+        // --- LÓGICA DE AUTOCOMPLETAR E SALVAR AULA ---
+        document.getElementById('nomeAluno').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            selectedAluno = null;
+            document.getElementById('submitBtn').disabled = true;
+            buscarAlunos(query);
+        });
+
+        async function buscarAlunos(query) {
+            const sugestoesDiv = document.getElementById('sugestoesAlunos');
+            if (query.length < 3) {
+                sugestoesDiv.classList.add('hidden');
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(`${SCRIPT_URL}?action=searchAlunos&query=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Erro na resposta da rede.');
+                    const alunos = await response.json();
+                    exibirSugestoes(alunos);
+                } catch (error) {
+                    console.error('Erro ao buscar alunos:', error);
+                    sugestoesDiv.classList.add('hidden');
+                }
+            }, 300);
+        }
+
+        function exibirSugestoes(alunos) {
+            const sugestoesDiv = document.getElementById('sugestoesAlunos');
+            sugestoesDiv.innerHTML = '';
+            document.getElementById('alunoError').classList.add('hidden'); // Oculta o erro ao exibir sugestões
+
+            if (alunos && alunos.length > 0) {
+                sugestoesDiv.classList.remove('hidden');
+                alunos.forEach(aluno => {
+                    const item = document.createElement('div');
+                    item.textContent = aluno.nome;
+                    item.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                    item.onclick = () => selecionarAluno(aluno);
+                    sugestoesDiv.appendChild(item);
+                });
+            } else {
+                sugestoesDiv.classList.add('hidden');
+                document.getElementById('submitBtn').disabled = true;
+                if (document.getElementById('nomeAluno').value.trim().length >= 3) {
+                    document.getElementById('alunoError').classList.remove('hidden');
+                }
+            }
+        }
+
+        function selecionarAluno(aluno) {
+            document.getElementById('nomeAluno').value = aluno.nome;
+            document.getElementById('sugestoesAlunos').classList.add('hidden');
+            document.getElementById('alunoError').classList.add('hidden');
+            selectedAluno = aluno;
+            document.getElementById('submitBtn').disabled = false;
+
+            if (aluno.professor && aluno.professor.toLowerCase() !== currentProfessor.toLowerCase()) {
+                document.getElementById('anotacoesAula').value = `Aluno associado a outro professor (${aluno.professor})`;
+            } else {
+                document.getElementById('anotacoesAula').value = '';
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const sugestoesDiv = document.getElementById('sugestoesAlunos');
+            const alunoInput = document.getElementById('nomeAluno');
+            if (!sugestoesDiv.contains(e.target) && e.target !== alunoInput) {
+                sugestoesDiv.classList.add('hidden');
+                if (!selectedAluno || selectedAluno.nome !== alunoInput.value.trim()) {
+                    document.getElementById('submitBtn').disabled = true;
+                    if (alunoInput.value.trim().length >= 3) {
+                        document.getElementById('alunoError').classList.remove('hidden');
+                    }
+                }
+            }
+        });
+        
+        document.getElementById('aulaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const alunoInput = document.getElementById('nomeAluno');
+            
+            if (!selectedAluno || selectedAluno.nome !== alunoInput.value.trim()) {
+                document.getElementById('alunoError').classList.remove('hidden');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            submitBtn.textContent = 'Salvando...';
+            submitBtn.disabled = true;
+
+            const dadosAula = {
+                action: 'saveAula',
+                professor: currentProfessor,
+                aluno: alunoInput.value.trim(),
+                data: document.getElementById('dataAula').value,
+                hora: document.getElementById('horaAula').value,
+                status: document.getElementById('statusAula').value,
+                anotacoes: document.getElementById('anotacoesAula').value.trim()
+            };
+
+            const sucesso = await salvarAulaGoogleSheets(dadosAula);
+            if (sucesso) {
+                document.getElementById('aulaForm').reset();
+                setDefaultDateTime();
+                selectedAluno = null;
+                setTimeout(() => carregarAulas(), 500);
+            }
+            submitBtn.textContent = 'Salvar no Google Sheets';
+            submitBtn.disabled = false;
+        });
+
+        async function salvarAulaGoogleSheets(dadosAula) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(dadosAula)
+                });
+                if (!response.ok) throw new Error(`Erro na rede: ${response.statusText}`);
+                const result = await response.json();
+                if (result.status === 'sucesso') {
+                    showToast('successToast');
+                    return true;
+                } else {
+                    throw new Error(result.message || 'Erro desconhecido no servidor.');
+                }
+            } catch (error) {
+                console.error('Falha ao salvar:', error);
+                showToast('errorToast', `Erro ao salvar: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function carregarAulas() {
+            const container = document.getElementById('registrosContainer');
+            container.innerHTML = `<div class="text-center py-8 text-gray-500">...Carregando aulas...</div>`;
+            try {
+                const urlComFiltro = `${SCRIPT_URL}?action=loadAulas&professor=${encodeURIComponent(currentProfessor)}`;
+                const response = await fetch(urlComFiltro);
+                if (!response.ok) throw new Error('Erro na resposta da rede');
+                const aulas = await response.json();
+                exibirAulas(aulas.reverse());
+            } catch (error) {
+                console.error('Erro ao carregar aulas:', error);
+                container.innerHTML = `<div class="text-center py-8 text-red-500"><div class="text-4xl mb-2">❌</div><p>Erro ao carregar aulas.</p></div>`;
+            }
+        }
+        
+        function exibirAulas(aulas) {
+            const container = document.getElementById('registrosContainer');
+            document.getElementById('totalAulas').textContent = aulas.length;
+            if (aulas.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-gray-500"><div class="text-4xl mb-2">📝</div><p>Nenhuma aula registrada ainda.</p></div>`;
+                return;
+            }
+            container.innerHTML = aulas.map(aula => {
+                const [id, timestamp, professor, aluno, data, hora, status, anotacoes] = aula;
+                const statusClass = getStatusClass(status);
+                const dataFormatada = new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+                const dataHoraAula = `${dataFormatada} às ${hora}`;
+                const timestampFormatado = new Date(timestamp.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$2/$1/$3')).toLocaleString('pt-BR');
+                return `<div class="bg-gray-50 rounded-xl p-4 border border-gray-200 fade-in"><div class="flex justify-between items-start gap-4"><div class="flex-1"><div class="flex items-center gap-3 mb-2 flex-wrap"><h3 class="font-bold text-lg text-indigo-700">${aluno}</h3><span class="text-white text-xs px-3 py-1 rounded-full ${statusClass}">${status}</span></div><p class="text-sm text-gray-700 mb-3"><span class="font-semibold">Aula em:</span> ${dataHoraAula}</p>${anotacoes ? `<div class="bg-white border border-gray-200 rounded-lg p-3 mt-2"><p class="text-sm text-gray-800 whitespace-pre-wrap">${anotacoes}</p></div>` : ''}</div></div><div class="text-right text-xs text-gray-400 mt-3 pt-2 border-t border-gray-200">Registrado em: ${timestampFormatado}</div></div>`;
+            }).join('');
+        }
+        
+        function getStatusClass(status) {
+            switch (status) {
+                case 'Aula Ministrada': return 'status-ministrada';
+                case 'Reposição Aula': return 'status-reposicao';
+                case 'Aluno Faltou (sem aviso)': return 'status-faltou-sem';
+                case 'Aluno Faltou (com aviso)': return 'status-faltou-com';
+                case 'Professor Não Pôde Ir': return 'status-professor';
+                default: return 'bg-gray-500';
+            }
+        }
+        
+        function showToast(toastId, message = null) {
+            const toast = document.getElementById(toastId);
+            if (message && toastId === 'errorToast') { document.getElementById('errorMessage').textContent = message; }
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => toast.classList.add('translate-x-full'), 3000);
+        }
+        
+        function setDefaultDateTime() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataAula').value = hoje;
+            const agora = new Date();
+            const hora = agora.getHours().toString().padStart(2, '0');
+            const minutos = agora.getMinutes().toString().padStart(2, '0');
+            document.getElementById('horaAula').value = `${hora}:${minutos}`;
+        }
+        
+        window.logout = function() {
+            currentProfessor = '';
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('professorName').value = '';
+            document.getElementById('professorPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            selectedAluno = null;
+        }
+        
+        document.addEventListener('DOMContentLoaded', setDefaultDateTime);
+    </script>
+</body>
+</html>
